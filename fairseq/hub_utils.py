@@ -158,7 +158,7 @@ class GeneratorHubInterface(nn.Module):
             return self.generate(
                 tokenized_sentences.unsqueeze(0), beam=beam, verbose=verbose, **kwargs
             )[0]
-
+        
         # build generator using current args as well as any kwargs
         gen_args = copy.deepcopy(self.cfg.generation)
         with open_dict(gen_args):
@@ -183,13 +183,14 @@ class GeneratorHubInterface(nn.Module):
 
         # sort output to match input order
         outputs = [hypos for _, hypos in sorted(results, key=lambda x: x[0])]
-
+        #verbose = True
         if verbose:
 
             def getarg(name, default):
                 return getattr(gen_args, name, getattr(self.cfg, name, default))
 
             for source_tokens, target_hypotheses in zip(tokenized_sentences, outputs):
+                #print(self.decode(source_tokens))
                 src_str_with_unk = self.string(source_tokens)
                 logger.info("S\t{}".format(src_str_with_unk))
                 for hypo in target_hypotheses:
