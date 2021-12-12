@@ -248,6 +248,8 @@ def get_parser(desc, default_task="translation"):
         choices=TASK_REGISTRY.keys(),
         help="task",
     )
+    parser.add_argument("--positive_lang",default="positive", help=" ~~~ ")
+    parser.add_argument("--negtive_lang", default="negtive",help=" ~~~ ")
     # fmt: on
     return parser
 

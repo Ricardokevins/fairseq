@@ -250,6 +250,7 @@ class SequenceGenerator(nn.Module):
             self.min_len <= max_len
         ), "min_len cannot be larger than max_len, please adjust these!"
         # compute the encoder output for each beam
+        
         with torch.autograd.profiler.record_function("EnsembleModel: forward_encoder"):
             encoder_outs = self.model.forward_encoder(net_input)
 
@@ -547,7 +548,7 @@ class SequenceGenerator(nn.Module):
 
             # reorder incremental state in decoder
             reorder_state = active_bbsz_idx
-
+        
         # sort by score descending
         for sent in range(len(finalized)):
             scores = torch.tensor(

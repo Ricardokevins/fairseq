@@ -452,7 +452,6 @@ class Trainer(object):
         other ranks.
         """
         extra_state, self._optim_history, last_optim_state = None, [], None
-
         logger.info(f"Preparing to load checkpoint {filename}")
         is_distributed = self.data_parallel_world_size > 1
         bexists = PathManager.isfile(filename)
@@ -517,11 +516,9 @@ class Trainer(object):
                 )
             extra_state = state["extra_state"]
             self._optim_history = state["optimizer_history"]
-
         if last_optim_state is not None and not reset_optimizer:
             # rebuild optimizer after loading model, since params may have changed
             self._build_optimizer()
-
             # only reload optimizer and lr_scheduler if they match
             last_optim = self._optim_history[-1]
             assert (

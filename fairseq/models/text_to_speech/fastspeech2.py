@@ -15,7 +15,6 @@ from fairseq.modules import (
 )
 from fairseq import utils
 from fairseq.data.data_utils import lengths_to_padding_mask
-from fairseq.models.text_to_speech.tacotron2 import Postnet
 
 
 logger = logging.getLogger(__name__)
@@ -244,14 +243,6 @@ class FastSpeech2Encoder(FairseqEncoder):
 
         self.out_proj = nn.Linear(args.decoder_embed_dim, self.out_dim)
 
-        self.postnet = None
-        if args.add_postnet:
-            self.postnet = Postnet(
-                self.out_dim, args.postnet_conv_dim,
-                args.postnet_conv_kernel_size,
-                args.postnet_layers, args.postnet_dropout
-            )
-
         self.apply(model_init)
 
     def forward(self, src_tokens, src_lengths=None, speaker=None,
@@ -279,10 +270,8 @@ class FastSpeech2Encoder(FairseqEncoder):
             x = layer(x, dec_padding_mask)
 
         x = self.out_proj(x)
-        x_post = None
-        if self.postnet is not None:
-            x_post = x + self.postnet(x)
-        return x, x_post, out_lens, log_dur_out, pitch_out, energy_out
+
+        return x, out_lens, log_dur_out, pitch_out, energy_out
 
 
 @register_model("fastspeech2")
@@ -313,12 +302,6 @@ class FastSpeech2Model(FairseqEncoderModel):
         parser.add_argument("--var-pred-hidden-dim", type=int)
         parser.add_argument("--var-pred-kernel-size", type=int)
         parser.add_argument("--var-pred-dropout", type=float)
-        # postnet
-        parser.add_argument("--add-postnet", action="store_true")
-        parser.add_argument("--postnet-dropout", type=float)
-        parser.add_argument("--postnet-layers", type=int)
-        parser.add_argument("--postnet-conv-dim", type=int)
-        parser.add_argument("--postnet-conv-kernel-size", type=int)
 
     def __init__(self, encoder, args, src_dict):
         super().__init__(encoder)
@@ -367,9 +350,3 @@ def base_architecture(args):
     args.var_pred_hidden_dim = getattr(args, "var_pred_hidden_dim", 256)
     args.var_pred_kernel_size = getattr(args, "var_pred_kernel_size", 3)
     args.var_pred_dropout = getattr(args, "var_pred_dropout", 0.5)
-    # postnet
-    args.add_postnet = getattr(args, "add_postnet", False)
-    args.postnet_dropout = getattr(args, "postnet_dropout", 0.5)
-    args.postnet_layers = getattr(args, "postnet_layers", 5)
-    args.postnet_conv_dim = getattr(args, "postnet_conv_dim", 512)
-    args.postnet_conv_kernel_size = getattr(args, "postnet_conv_kernel_size", 5)
