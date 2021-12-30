@@ -90,14 +90,6 @@ class BARTHubInterface(GeneratorHubInterface):
         sample = utils.apply_to_sample(lambda tensor: tensor.to(self.device), sample)
         return sample
 
-    def sample_(
-        self, sentences: List[str], prefixes: List[str] = None, beam: int = 1, verbose: bool = False, **kwargs) -> str:
-        print("========================= Warning!!!!!! Using Modified API =========================")
-        input = [self.encode(sentence) for sentence in sentences]
-        prefix = [self.encode(sentence)[:-1] for sentence in prefixes]
-        hypos = self.generate_(input, prefix, beam, verbose, **kwargs)
-        return [self.decode(x[0]["tokens"]) for x in hypos]
-
     def generate(
         self,
         tokenized_sentences: List[torch.LongTensor],
@@ -126,36 +118,7 @@ class BARTHubInterface(GeneratorHubInterface):
                 res.append((id, hypos))
         res = [hypos for _, hypos in sorted(res, key=lambda x: x[0])]
         return res
-        
-    def generate_(self, tokens: List[torch.LongTensor], prefix: List[torch.LongTensor], *args, verbose: bool = False,inference_step_args=None, skip_invalid_size_inputs=False,**kwargs) -> torch.LongTensor:
-        print("========================= Warning!!!!!! Using Modified API =========================")
-        sample = self._build_sample(tokens)
-        prefix_sample = self._build_sample(prefix)
-        inference_step_args = inference_step_args or {}
-        if "prefix_tokens" in inference_step_args:
-            raise NotImplementedError("prefix generation not implemented for BART")
-        res = []
-        for batch in self._build_batches(tokens, False):
-            src_tokens = batch['net_input']['src_tokens']
-            # inference_step_args["prefix_tokens"] =src_tokens.new_full(
-            #     (src_tokens.size(0), 1), fill_value=self.task.source_dictionary.bos()
-            # ).to(device=self.device)
-            inference_step_args["prefix_tokens"] = prefix_sample['net_input']['src_tokens']
-            #print(inference_step_args["prefix_tokens"])
-            # exit()
-            results = super().generate(
-                src_tokens,
-                *args,
-                inference_step_args=inference_step_args,
-                skip_invalid_size_inputs=False,
-                **kwargs
-            )
-            for id, hypos in zip(batch['id'].tolist(), results):
-                res.append((id, hypos))
-        res = [hypos for _, hypos in sorted(res, key=lambda x: x[0])]
-        #print(res)
-        return res
-        
+
     def extract_features(
         self, tokens: torch.LongTensor, return_all_hiddens: bool = False
     ) -> torch.Tensor:

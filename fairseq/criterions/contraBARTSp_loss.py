@@ -67,7 +67,7 @@ class contraBARTSp_loss(FairseqCriterion):
         self.eps = label_smoothing
         self.ignore_prefix_size = ignore_prefix_size
         self.report_accuracy = report_accuracy
-        self.final_loss = nn.MarginRankingLoss(1)
+        self.final_loss = nn.MarginRankingLoss(0)
 
     def forward(self, model, sample, reduce=True):
         """Compute the loss for the given sample.
@@ -104,9 +104,10 @@ class contraBARTSp_loss(FairseqCriterion):
         loss2 = loss2.reshape(BATCHSIZE,-1).sum(dim = 1)
         ones = torch.ones(loss1.size()).cuda(loss1.device)
 
-        final_loss = self.final_loss(loss2,loss1,ones) + loss1.mean() + loss2.mean()
-        nll_loss = nll_loss1.mean() + nll_loss2.mean()
-        
+        #final_loss = self.final_loss(loss2,loss1,ones) + loss1.mean() + loss2.mean()
+        final_loss = self.final_loss(loss2,loss1,ones) + loss1.mean()
+        #nll_loss = nll_loss1.mean() + nll_loss2.mean()
+        nll_loss = nll_loss1.mean()
         sample_size = (
             sample["positive"].size(0) if self.sentence_avg else sample["ntokens"]
         )

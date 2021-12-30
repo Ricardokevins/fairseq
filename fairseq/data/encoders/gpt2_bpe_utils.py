@@ -129,6 +129,8 @@ class Encoder:
 
 
 def get_encoder(encoder_json_path, vocab_bpe_path):
+    encoder_json_path = '/home/shesj/fairseq/fairseq/data/encoders/encoder.json'
+    vocab_bpe_path = '/home/shesj/fairseq/fairseq/data/encoders/vocab.bpe.txt'
     with open(encoder_json_path, "r") as f:
         encoder = json.load(f)
     with open(vocab_bpe_path, "r", encoding="utf-8") as f:
@@ -138,3 +140,13 @@ def get_encoder(encoder_json_path, vocab_bpe_path):
         encoder=encoder,
         bpe_merges=bpe_merges,
     )
+
+
+# def test():
+#     encoder = get_encoder(None,None)
+#     print(encoder.encode("Bob <mask> happy."))
+#     print(encoder.encode("Bob is happy."))
+#     print(encoder.encode("<s>Bob is happy.</s>"))
+#     print(encoder.encode("<s> Bob is happy. </s>"))
+
+# test()
